@@ -3,14 +3,16 @@ from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 import jwt
 from core.config import settings
 from schemas.auth_schemas import TokenPayload
+from services.secrets_service import secrets_service
 
 # HTTPBearer automatically checks for the Authorization header
 security = HTTPBearer()
 
 async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)) -> TokenPayload:
     token = credentials.credentials
+    secret_key = secrets_service.get_secret("SECRET_KEY")
     try:
-        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
+        payload = jwt.decode(token, secret_key, algorithms=[settings.ALGORITHM])
         user_id: str = payload.get("user_id")
         email: str = payload.get("email")
         

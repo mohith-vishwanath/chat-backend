@@ -1,5 +1,6 @@
 import asyncpg
 from core.config import settings
+from services.secrets_service import secrets_service
 
 import logging
 
@@ -10,9 +11,12 @@ class Database:
         self.pool = None
 
     async def connect(self):
-        self.pool = await asyncpg.create_pool(dsn=settings.DATABASE_URL)
+        logger.info("Connecting to db")
+        db_url = secrets_service.get_secret("DATABASE_URL")
+        if not db_url:
+            raise Exception("DATABASE_URL secret is not set.")
+        self.pool = await asyncpg.create_pool(dsn=db_url)
         logger.info("Connected")
-
     async def disconnect(self):
         if self.pool:
             await self.pool.close()

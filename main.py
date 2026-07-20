@@ -3,6 +3,7 @@ from contextlib import asynccontextmanager
 from database import db
 from endpoints.auth_endpoints import router as auth_router
 from dependencies.auth_deps import get_current_user
+from services.secrets_service import secrets_service
 
 import logging
 
@@ -10,6 +11,8 @@ logger = logging.getLogger("uvicorn")
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    # Startup: Load secrets first
+    secrets_service.load_secrets()
     # Startup: Connect to the database pool
     await db.connect()
     logger.info("Server started, listening on port 8000")

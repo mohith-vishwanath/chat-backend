@@ -5,4 +5,4 @@ PyJWT
 passlib[bcrypt]
 pydantic
 pydantic-settings
-email-validator
+email-validatorboto3
