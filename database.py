@@ -1,12 +1,17 @@
 import asyncpg
 from core.config import settings
 
+import logging
+
+logger = logging.getLogger("uvicorn")
+
 class Database:
     def __init__(self):
         self.pool = None
 
     async def connect(self):
         self.pool = await asyncpg.create_pool(dsn=settings.DATABASE_URL)
+        logger.info("Connected")
 
     async def disconnect(self):
         if self.pool:

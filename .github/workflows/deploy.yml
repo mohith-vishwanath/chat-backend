@@ -1,0 +1,66 @@
+name: Deploy to Amazon ECS
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  ENVIRONMENT: production                 # TODO: set this to your environment name (e.g. staging, production)
+  AWS_REGION: us-east-1                   # TODO: set this to your preferred AWS region, e.g. us-west-1
+  ECR_REPOSITORY: chat-backend            # TODO: set this to your Amazon ECR repository name
+  ECS_SERVICE: chat-backend-service       # TODO: set this to your Amazon ECS service name
+  ECS_CLUSTER: chat-backend-cluster       # TODO: set this to your Amazon ECS cluster name
+  ECS_TASK_DEFINITION: .aws/task-definition.json # TODO: set this to the path to your Amazon ECS task definition file
+
+# This permission setup is strictly required for AWS OIDC authentication
+permissions:
+  id-token: write # Required for requesting the JWT
+  contents: read  # Required for actions/checkout
+
+jobs:
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        role-to-assume: arn:aws:iam::123456789012:role/github-actions-role # TODO: Update this ARN with your AWS IAM Role ARN
+        aws-region: ${{ env.AWS_REGION }}
+
+    - name: Login to Amazon ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v2
+
+    - name: Build, tag, and push image to Amazon ECR
+      id: build-image
+      env:
+        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        IMAGE_TAG: ${{ github.sha }}
+      run: |
+        # Build a docker container and push it to ECR so that it can be deployed to ECS.
+        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+        echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
+
+    - name: Fill in the new image ID in the Amazon ECS task definition
+      id: task-def
+      uses: aws-actions/amazon-ecs-render-task-definition@v1
+      with:
+        task-definition: ${{ env.ECS_TASK_DEFINITION }}
+        container-name: ${{ env.ENVIRONMENT }}-chat-backend # TODO: Update this to match your container name in the ECS task definition
+        image: ${{ steps.build-image.outputs.image }}
+
+    - name: Deploy Amazon ECS task definition
+      uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+      with:
+        task-definition: ${{ steps.task-def.outputs.task-definition }}
+        service: ${{ env.ECS_SERVICE }}
+        cluster: ${{ env.ECS_CLUSTER }}
+        wait-for-service-stability: true

@@ -4,10 +4,15 @@ from database import db
 from endpoints.auth_endpoints import router as auth_router
 from dependencies.auth_deps import get_current_user
 
+import logging
+
+logger = logging.getLogger("uvicorn")
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup: Connect to the database pool
     await db.connect()
+    logger.info("Server started, listening on port 8000")
     yield
     # Shutdown: Disconnect the pool
     await db.disconnect()
