@@ -11,3 +11,18 @@ CREATE TABLE IF NOT EXISTS users (
     auth_source VARCHAR(20) DEFAULT 'password' CHECK (auth_source IN ('password', 'sso')),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE TABLE IF NOT EXISTS workflows (
+    workflow_id VARCHAR(100) PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    is_active BOOLEAN DEFAULT TRUE
+);
+
+CREATE TABLE IF NOT EXISTS chats (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    title VARCHAR(255) NOT NULL,
+    last_used_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    is_active BOOLEAN DEFAULT TRUE,
+    workflow_id VARCHAR(100) NOT NULL,
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE
+);

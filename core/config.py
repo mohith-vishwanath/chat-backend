@@ -4,6 +4,7 @@ class Settings(BaseSettings):
     PROJECT_NAME: str = "Chat Backend"
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_DAYS: int = 7
+    SQS_QUEUE_NAME: str = ""
 
     model_config = {
         "env_file": ".env",
