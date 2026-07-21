@@ -29,6 +29,10 @@ app.include_router(auth_router, prefix="/api/auth", tags=["auth"])
 app.include_router(workflow_router, prefix="/api/workflows", tags=["workflows"])
 app.include_router(chat_router, prefix="/api/chats", tags=["chats"])
 
+@app.get("/health")
+async def health_check():
+    return {"message": "Stay Hungry, Stay Foolish"}
+
 # Example protected route showcasing the JWT middleware
 @app.get("/api/protected", dependencies=[Depends(get_current_user)])
 async def protected_route():
