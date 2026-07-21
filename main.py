@@ -1,11 +1,14 @@
 from fastapi import FastAPI, Depends
+from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from database import db
 from endpoints.auth_endpoints import router as auth_router
 from endpoints.workflow_endpoints import router as workflow_router
 from endpoints.chat_endpoints import router as chat_router
+from endpoints.user_endpoints import router as user_router
 from dependencies.auth_deps import get_current_user
 from services.secrets_service import secrets_service
+from core.config import settings
 
 import logging
 
@@ -24,10 +27,26 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="Chat Backend API", lifespan=lifespan)
 
+# CORS Middleware configuration
+origins = [
+    origin.strip()
+    for origin in settings.CORS_ORIGINS.split(",")
+    if origin.strip()
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 # Include the public auth routes
 app.include_router(auth_router, prefix="/api/auth", tags=["auth"])
 app.include_router(workflow_router, prefix="/api/workflows", tags=["workflows"])
 app.include_router(chat_router, prefix="/api/chats", tags=["chats"])
+app.include_router(user_router, prefix="/api/user", tags=["user"])
 
 @app.get("/health")
 async def health_check():

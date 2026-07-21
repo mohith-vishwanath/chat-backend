@@ -5,6 +5,7 @@ class Settings(BaseSettings):
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_DAYS: int = 7
     SQS_QUEUE_NAME: str = ""
+    CORS_ORIGINS: str = ""
 
     model_config = {
         "env_file": ".env",

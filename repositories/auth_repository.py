@@ -10,3 +10,12 @@ class AuthRepository:
         """
         record = await db.query(query, email, fetch_one=True)
         return dict(record) if record else None
+
+    async def get_user_by_id(self, user_id: str) -> Optional[dict]:
+        query = """
+            SELECT id, first_name, last_name, email, is_active, password_hash, auth_source, created_at
+            FROM users
+            WHERE id = $1::uuid;
+        """
+        record = await db.query(query, user_id, fetch_one=True)
+        return dict(record) if record else None

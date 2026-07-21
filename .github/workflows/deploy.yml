@@ -4,9 +4,11 @@ on:
   push:
     branches:
       - main
+    tags:
+      - '*'
 
 env:
-  ENVIRONMENT: production                 # TODO: set this to your environment name (e.g. staging, production)
+  ENVIRONMENT: ${{ github.ref_type == 'tag' && 'production' || 'test' }}
   AWS_REGION: us-east-1                   # TODO: set this to your preferred AWS region, e.g. us-west-1
   ECR_REPOSITORY: chat-backend            # TODO: set this to your Amazon ECR repository name
   ECS_SERVICE: chat-backend-service       # TODO: set this to your Amazon ECS service name
@@ -22,7 +24,8 @@ jobs:
   deploy:
     name: Deploy
     runs-on: ubuntu-latest
-    environment: production
+    # Dynamically select the GitHub Environment based on whether the trigger was a tag or a branch
+    environment: ${{ github.ref_type == 'tag' && 'production' || 'test' }}
 
     steps:
     - name: Checkout
