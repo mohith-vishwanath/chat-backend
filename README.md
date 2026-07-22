@@ -1,1 +1,1 @@
-# libre-chat
+# chat-backend

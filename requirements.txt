@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+asyncpg
+PyJWT
+passlib[bcrypt]
+pydantic
+pydantic-settings
+email-validator
+boto3
